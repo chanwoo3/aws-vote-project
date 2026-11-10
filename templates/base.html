@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Campus Festival{% endblock %} | Campus Festival</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body><header class="site-header"><div class="nav-wrap"><a class="brand" href="{{ url_for('index') }}">✦ CAMPUS FESTIVAL</a>
+<nav><a href="{{ url_for('index') }}">홈</a><a href="{{ url_for('vote') }}">공연 투표</a><a href="{{ url_for('results') }}">투표 결과</a><a href="{{ url_for('board') }}">응원 게시판</a><a href="{{ url_for('manage') }}">공연 관리</a></nav></div></header>
+<main class="container">{% with messages = get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="alert {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+{% block content %}{% endblock %}</main><footer>Campus Festival · Flask + SQLite · AWS EC2</footer></body></html>
