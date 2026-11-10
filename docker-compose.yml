@@ -1,3 +1,4 @@
+
 services:
   web:
     build: .
@@ -5,6 +6,8 @@ services:
       - "8080:5000"
     environment:
       DB_PATH: /data/votes.db
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
     volumes:
       - vote_data:/data
     restart: unless-stopped

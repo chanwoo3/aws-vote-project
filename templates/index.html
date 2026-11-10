@@ -1,44 +1,280 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>학과 축제 투표</title>
+
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; background: #f6f7fb; }
-    section { background: white; padding: 20px; border-radius: 10px; margin-bottom: 16px; }
-    label { display: block; margin: 12px 0; }
-    button { padding: 9px 15px; cursor: pointer; }
-    input[type=text] { padding: 9px; max-width: 80%; }
-    li { margin: 8px 0; }
+    body {
+      font-family: sans-serif;
+      max-width: 750px;
+      margin: 40px auto;
+      padding: 0 16px;
+      background: #f6f7fb;
+      color: #222;
+    }
+
+    section {
+      background: white;
+      padding: 22px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    button {
+      padding: 10px 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      max-width: 65%;
+    }
+
+    .vote-option {
+      display: block;
+      margin: 14px 0;
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: #eff6ff;
+      padding: 18px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 22px;
+      margin-top: 8px;
+      color: #1d4ed8;
+    }
+
+    .result-item {
+      margin: 20px 0;
+    }
+
+    .result-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .bar-background {
+      height: 22px;
+      background: #e5e7eb;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      background: #3b82f6;
+      border-radius: 6px;
+    }
+
+    .message {
+      background: #dbeafe;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .delete-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .delete-button {
+      background: #dc2626;
+    }
+
+    .notice {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .delete-form {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
   </style>
 </head>
+
 <body>
+
   <h1>학과 축제 인기 공연 투표</h1>
+
+  {% if message %}
+    <div class="message">{{ message }}</div>
+  {% endif %}
+
+  <!-- 투표 현황 -->
+  <section>
+    <h2>투표 현황</h2>
+
+    <div class="stats">
+      <div class="stat-card">
+        총 투표수
+        <strong>{{ total_votes }}표</strong>
+      </div>
+
+      <div class="stat-card">
+        현재 1위
+        <strong>{{ first_place }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1. 투표하기 -->
   <section>
     <h2>1. 투표하기</h2>
+
     <form action="{{ url_for('vote') }}" method="post">
+
       {% for id, name, count in votes %}
-        <label><input type="radio" name="vote_id" value="{{ id }}" required> {{ name }}</label>
+        <label class="vote-option">
+          <input
+            type="radio"
+            name="vote_id"
+            value="{{ id }}"
+            required
+            {% if already_voted %}disabled{% endif %}
+          >
+          {{ name }}
+        </label>
       {% endfor %}
-      <button type="submit">투표하기</button>
+
+      <button
+        type="submit"
+        {% if already_voted or not votes %}disabled{% endif %}
+      >
+        {% if already_voted %}
+          투표 완료
+        {% else %}
+          투표하기
+        {% endif %}
+      </button>
     </form>
+
+    {% if already_voted %}
+      <p class="notice">
+        이 브라우저에서는 이미 투표했습니다.
+      </p>
+    {% endif %}
   </section>
+
+  <!-- 2. 투표 결과 -->
   <section>
-    <h2>2. 결과 확인</h2>
-    <form action="/" method="get"><button type="submit">결과 새로고침</button></form>
-    <ul>
-      {% for id, name, count in votes %}
-        <li>{{ name }}: {{ count }}표</li>
-      {% endfor %}
-    </ul>
+    <h2>2. 투표 결과</h2>
+
+    <form action="/" method="get">
+      <button type="submit">결과 새로고침</button>
+    </form>
+
+    {% for id, name, count, percent in results %}
+      <div class="result-item">
+
+        <div class="result-info">
+          <span>{{ name }}</span>
+          <span>{{ count }}표 ({{ percent }}%)</span>
+        </div>
+
+        <div class="bar-background">
+          <div class="bar" style="width: {{ percent }}%;"></div>
+        </div>
+
+      </div>
+    {% endfor %}
   </section>
+
+  <!-- 3. 공연 추가 -->
   <section>
     <h2>3. 투표 항목 추가</h2>
+
     <form action="{{ url_for('add') }}" method="post">
-      <input type="text" name="name" maxlength="50" placeholder="새 공연 이름" required>
+      <input
+        type="text"
+        name="name"
+        maxlength="50"
+        placeholder="새 공연 이름"
+        required
+      >
       <button type="submit">추가하기</button>
     </form>
   </section>
+
+  <!-- 4. 공연 삭제 -->
+  <section>
+    <h2>4. 투표 항목 삭제</h2>
+
+    <p class="notice">
+      공연을 삭제하려면 관리자 비밀번호가 필요합니다.
+    </p>
+
+    {% for id, name, count in votes %}
+      <div class="delete-item">
+
+        <span>{{ name }} ({{ count }}표)</span>
+
+        <form
+          class="delete-form"
+          action="{{ url_for('delete') }}"
+          method="post"
+          onsubmit="return confirm('정말 이 공연을 삭제하시겠습니까?');"
+        >
+          <input type="hidden" name="vote_id" value="{{ id }}">
+
+          <input
+            type="password"
+            name="password"
+            placeholder="관리자 비밀번호"
+            autocomplete="off"
+            required
+          >
+
+          <button class="delete-button" type="submit">
+            삭제
+          </button>
+        </form>
+
+      </div>
+    {% endfor %}
+  </section>
+
 </body>
 </html>
