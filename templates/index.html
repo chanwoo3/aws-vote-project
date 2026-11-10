@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>학과 축제 투표</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; background: #f6f7fb; }
+    section { background: white; padding: 20px; border-radius: 10px; margin-bottom: 16px; }
+    label { display: block; margin: 12px 0; }
+    button { padding: 9px 15px; cursor: pointer; }
+    input[type=text] { padding: 9px; max-width: 80%; }
+    li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <h1>학과 축제 인기 공연 투표</h1>
+  <section>
+    <h2>1. 투표하기</h2>
+    <form action="{{ url_for('vote') }}" method="post">
+      {% for id, name, count in votes %}
+        <label><input type="radio" name="vote_id" value="{{ id }}" required> {{ name }}</label>
+      {% endfor %}
+      <button type="submit">투표하기</button>
+    </form>
+  </section>
+  <section>
+    <h2>2. 결과 확인</h2>
+    <form action="/" method="get"><button type="submit">결과 새로고침</button></form>
+    <ul>
+      {% for id, name, count in votes %}
+        <li>{{ name }}: {{ count }}표</li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section>
+    <h2>3. 투표 항목 추가</h2>
+    <form action="{{ url_for('add') }}" method="post">
+      <input type="text" name="name" maxlength="50" placeholder="새 공연 이름" required>
+      <button type="submit">추가하기</button>
+    </form>
+  </section>
+</body>
+</html>
